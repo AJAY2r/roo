@@ -353,7 +353,7 @@ class Excel < GenericSpreadsheet
     row_index=1
     worksheet.each(0) do |row| 
       (0..row.size).each do |cell_index|
-        cell = row.at(cell_index)
+        cell = row[cell_index]
         next if cell.nil?  #skip empty cells
         next if cell.class == Spreadsheet::Formula && cell.value.nil? # skip empty formla cells
         if date_or_time?(row, cell_index)
@@ -375,7 +375,7 @@ class Excel < GenericSpreadsheet
   # Get the contents of a cell, accounting for the
   # way formula stores the value
   def read_cell_content(row, idx)
-    cell = row.at(idx)
+    cell = row[idx]
     cell = cell.value if cell.class == Spreadsheet::Formula
     cell
   end
@@ -385,7 +385,8 @@ class Excel < GenericSpreadsheet
     format = row.format(idx)
     if format.date_or_time?
       cell = read_cell_content(row, idx)
-      true if Float(cell) > 0 rescue false
+      true
+      # if Float(cell) > 0 rescue false
     else
       false
     end  
@@ -408,7 +409,7 @@ class Excel < GenericSpreadsheet
       s = secs
       value = h*3600+m*60+s
     else
-      if row.at(idx).class == Spreadsheet::Formula
+      if row[idx].class == Spreadsheet::Formula
         datetime = row._datetime(cell)
       else
         datetime = row.datetime(idx)
@@ -420,7 +421,7 @@ class Excel < GenericSpreadsheet
         value = datetime
       else
         value_type = :date
-        if row.at(idx).class == Spreadsheet::Formula
+        if row[idx].class == Spreadsheet::Formula
           value = row._date(cell)
         else
           value = row.date(idx)

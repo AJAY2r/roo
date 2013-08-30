@@ -43,6 +43,7 @@ class Excelx < GenericSpreadsheet
     "yyyy\\-mm\\-dd" => :date,
     'dd/mm/yy' => :date,
     'hh:mm:ss' => :time,
+    "mm/dd/yyyy" => :date,
     "dd/mm/yy\\ hh:mm" => :datetime,
   }
   STANDARD_FORMATS = { 
@@ -336,7 +337,8 @@ class Excelx < GenericSpreadsheet
     when :percentage
       @cell[sheet][key] = v.to_f
     when :time
-      @cell[sheet][key] = v.to_f*(24*60*60)
+      # @cell[sheet][key] = v.to_f*(24*60*60)
+      @cell[sheet][key] = v
     else
       @cell[sheet][key] = v
     end
@@ -376,7 +378,7 @@ class Excelx < GenericSpreadsheet
 
   # read all cells in the selected sheet
   def format2type(format)
-    if FORMATS.has_key? format
+    if FORMATS.has_key? format.downcase
       FORMATS[format]
     else
       :float
@@ -441,8 +443,14 @@ class Excelx < GenericSpreadsheet
             vt = :float
             v = cell.content
           end
+          
           #puts "vt: #{vt}" if cell.text.include? "22606.5120"
           x,y = split_coordinate(c.attributes.to_h['r'])
+          if attribute2format(s_attribute).downcase.index('h:mm') or attribute2format(s_attribute).downcase.index('hh:mm')
+            vt = :time
+            v = DateTime.new(1899, 12, 30) + v.to_f
+            excelx_value = DateTime.new(1899, 12, 30) + excelx_value.to_f
+          end
           tr=nil #TODO: ???s
           set_cell_values(sheet,x,y,0,v,vt,formula,tr,str_v,excelx_type,excelx_value,s_attribute)
         end
@@ -549,7 +557,7 @@ class Excelx < GenericSpreadsheet
     doc.find("//*[local-name()='numFmt']").each do |numFmt|
       numFmtId = numFmt.attributes.to_h['numFmtId']
       formatCode = numFmt.attributes.to_h['formatCode']
-      @numFmts << [numFmtId, formatCode]
+      @numFmts << [numFmtId, formatCode.downcase]
     end
     doc.find("//*[local-name()='fonts']").each do |fonts_el|
       fonts_el.each_element do |font_el|
