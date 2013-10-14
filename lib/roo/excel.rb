@@ -397,7 +397,14 @@ class Excel < GenericSpreadsheet
   # the date-time values for Roo
   def read_cell_date_or_time(row, idx)
     cell = read_cell_content(row, idx)
-    cell = cell.to_s.to_f
+
+    # Ajay fix for different date format
+    validated = true
+    DateTime.parse(cell) rescue validated = false 
+    cell = (cell.class == String and validated) ? DateTime.parse(cell).to_s.to_f : cell.to_s.to_f 
+
+    # cell = cell.to_s.to_f
+
     if cell < 1.0
       value_type = :time
       f = cell*24.0*60.0*60.0
@@ -411,6 +418,8 @@ class Excel < GenericSpreadsheet
     else
       if row[idx].class == Spreadsheet::Formula
         datetime = row._datetime(cell)
+      elsif row[idx].class == String and validated     # Ajay fix for different date format
+        datetime = DateTime.parse(row[idx])
       else
         datetime = row.datetime(idx)
       end    
@@ -423,6 +432,8 @@ class Excel < GenericSpreadsheet
         value_type = :date
         if row[idx].class == Spreadsheet::Formula
           value = row._date(cell)
+        elsif row[idx].class == String and validated     # Ajay fix for different date format
+         datetime = Date.parse(row[idx])
         else
           value = row.date(idx)
         end    
