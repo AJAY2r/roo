@@ -433,7 +433,7 @@ class Excel < GenericSpreadsheet
         if row[idx].class == Spreadsheet::Formula
           value = row._date(cell)
         elsif row[idx].class == String and validated     # Ajay fix for different date format
-         datetime = Date.parse(row[idx])
+         value = Date.parse(row[idx])
         else
           value = row.date(idx)
         end    
