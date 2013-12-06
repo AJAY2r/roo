@@ -335,6 +335,7 @@ class Excelx < GenericSpreadsheet
     @formula[sheet] = {} unless @formula[sheet]
     @formula[sheet][key] = formula  if formula
     @cell[sheet]    = {} unless @cell[sheet]
+    #debugger if (y == 5 and x == 23)
     case @cell_type[sheet][key]
     when :float
       @cell[sheet][key] = v.to_f
@@ -404,7 +405,7 @@ class Excelx < GenericSpreadsheet
     n = self.sheets.index(sheet)
     @sheet_doc[n].find("//*[local-name()='c']").each do |c|
        s_attribute = c.attributes.to_h['s'].to_i   
-       if (c.attributes.to_h['t'] == 's')
+       if (c.attributes.to_h['t'] == 's') 
          tmp_type = :shared
        elsif (c.attributes.to_h['t'] == 'b')
          tmp_type = :boolean
@@ -430,30 +431,47 @@ class Excelx < GenericSpreadsheet
           end
           excelx_type = [:numeric_or_formula,format]
           excelx_value = cell.content
-          if tmp_type == :shared
-            vt = :string
-            str_v = @shared_table[cell.content.to_i]
-            excelx_type = :string
-          elsif tmp_type == :boolean
-            vt = :boolean
-            cell.content.to_i == 1 ? v = 'TRUE' : v = 'FALSE'
-          elsif tmp_type == :date
-            vt = :date
-            v = cell.content
-          elsif tmp_type == :time
-            vt = :time
-            v = cell.content
-          elsif tmp_type == :datetime
-            vt = :datetime
-            v = cell.content
-          elsif tmp_type == :formula
-            vt = :formula
-            v = cell.content.to_f #TODO: !!!!
+
+          if tmp_type == :shared and ([:date, :datetime].include?(format2type(attribute2format(s_attribute))))
+            begin
+              vt = format2type(attribute2format(s_attribute)).to_sym
+              str_v = @shared_table[cell.content.to_i]
+              if vt == :date
+                v = (Date.parse(str_v) - Date.new(1899, 12, 30)).to_i
+              elsif vt == :datetime
+                v = (DateTime.parse(str_v) - DateTime.new(1899, 12, 30)).to_i
+              end
+            rescue
+                vt = :string
+                str_v = @shared_table[cell.content.to_i]
+                excelx_type = :string
+            end
           else
-            vt = :float
-            v = cell.content
-          end
-          
+             if tmp_type == :shared
+                vt = :string
+                str_v = @shared_table[cell.content.to_i]
+                excelx_type = :string
+              elsif tmp_type == :boolean
+                vt = :boolean
+                cell.content.to_i == 1 ? v = 'TRUE' : v = 'FALSE'
+              elsif tmp_type == :date
+                vt = :date
+                v = cell.content
+              elsif tmp_type == :time
+                vt = :time
+                v = cell.content
+              elsif tmp_type == :datetime
+                vt = :datetime
+                v = cell.content
+              elsif tmp_type == :formula
+                vt = :formula
+                v = cell.content.to_f #TODO: !!!!
+              else
+                vt = :float
+                v = cell.content
+              end
+            end
+           
           #puts "vt: #{vt}" if cell.text.include? "22606.5120"
           x,y = split_coordinate(c.attributes.to_h['r'])
           if attribute2format(s_attribute).downcase.index('h:mm') or attribute2format(s_attribute).downcase.index('hh:mm')
