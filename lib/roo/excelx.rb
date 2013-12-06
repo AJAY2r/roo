@@ -50,6 +50,10 @@ class Excelx < GenericSpreadsheet
     'hh:mm:ss' => :time,
     "mm/dd/yyyy" => :date,
     "mm/dd/yyyy;@" => :date,
+    "mm/dd/yy" => :date,
+    "mm/dd/yy;@" => :date,
+    "m/d/yy" => :date,
+    "m/d/yy;@" => :date,
     "dd/mm/yy\\ hh:mm" => :datetime,
   }
   STANDARD_FORMATS = { 
@@ -458,6 +462,7 @@ class Excelx < GenericSpreadsheet
             excelx_value = DateTime.new(1899, 12, 30) + excelx_value.to_f
           end
           tr=nil #TODO: ???s
+          #debugger if (y == 5 and x == 23)
           set_cell_values(sheet,x,y,0,v,vt,formula,tr,str_v,excelx_type,excelx_value,s_attribute)
         end
       end
