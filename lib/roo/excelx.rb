@@ -42,6 +42,8 @@ class Excelx < GenericSpreadsheet
     #-- zusaetzliche Formate, die nicht standardmaessig definiert sind:
     "yyyy\\-mm\\-dd" => :date,
     'dd/mm/yy' => :date,
+    'dd/mm/yyyy;@' => :date,
+    'm/d/yyyy;@' => :date,
     'hh:mm:ss' => :time,
     "mm/dd/yyyy" => :date,
     "dd/mm/yy\\ hh:mm" => :datetime,
